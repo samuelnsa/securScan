@@ -11,22 +11,35 @@ const state = {
   activeReport: null,
   filterGrade: 'ALL',
   filterSeverity: 'ALL',
-  filterRemediationSite: 'ALL',
-  remediationViewMode: 'grouped', // 'grouped' or 'flat'
-  filterDetailSeverity: 'ALL',
-  searchQuery: '',
-  hardeningStack: 'nginx',
-  currentPatch: null,
-  individualStacks: {}, // Map vulnId -> selected stack
-  compareScan1Id: null,
-  compareScan2Id: null,
-  currentDetailSiteId: null
-};
+    // Handle JSON body but gracefully handle 202 Accepted (background job)
+    const status = res.status;
+    let data = null;
+    try { data = await res.json(); } catch (e) { data = null; }
 
-// DOM Elements
-const elements = {
-  // Clock & Telemetry
-  hudClock: document.getElementById('hud-clock'),
+    hideRadarOverlay();
+
+    if (status === 202) {
+      const msg = data?.message || 'Scan lancé en tâche de fond. Le rapport sera disponible bientôt.';
+      showToast(msg, 'info');
+      logToFeed(`Scan mis en file pour ${targetUrl} (job: ${data?.jobId || 'n/a'})`, 'INFO');
+      // Refresh dashboard to pick up newly-created site entry
+      await loadDashboardData();
+      return;
+    }
+
+    if (!res.ok) {
+      showToast("Erreur pendant l'audit : " + (data?.error || 'Erreur inconnue'), "error");
+      logToFeed(`Échec de l'audit pour ${targetUrl}: ${data?.error}`, 'ALERT');
+      return;
+    }
+
+    // Synchronous report returned (local/dev)
+    logToFeed(`Audit complété pour ${data.report.target.hostname} (Note: ${data.report.grade} - Score: ${data.report.score}/100)`, 'SUCCESS');
+    showToast(`Audit de ${data.report.target.hostname} terminé avec succès (Score: ${data.report.score}/100)`, "success");
+    handleRegressionAlert(data.regression);
+
+    await loadDashboardData();
+    window.inspectSite(data.siteId);
   omniSearchInput: document.getElementById('omni-search-input'),
   statAvgGrade: document.getElementById('stat-avg-grade'),
   statAvgScore: document.getElementById('stat-avg-score'),
