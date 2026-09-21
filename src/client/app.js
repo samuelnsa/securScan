@@ -590,6 +590,49 @@ async function executeScan(targetUrl) {
   }
 }
 
+// Poll job status until completion or timeout
+function pollJobStatus(jobId, callback, opts = {}) {
+  const intervalMs = opts.intervalMs || 3000;
+  const timeoutMs = opts.timeoutMs || 5 * 60 * 1000; // 5 minutes
+  const start = Date.now();
+  let stopped = false;
+
+  async function check() {
+    if (stopped) return;
+    try {
+      const res = await fetch(`/api/scan/status/${encodeURIComponent(jobId)}`);
+      if (!res.ok) {
+        // keep retrying unless 404
+        if (res.status === 404) {
+          stopped = true;
+          callback({ status: 'FAILED', error: 'Job introuvable' });
+          return;
+        }
+      } else {
+        const j = await res.json();
+        if (j.status === 'COMPLETED' || j.status === 'FAILED') {
+          stopped = true;
+          callback(j);
+          return;
+        }
+      }
+    } catch (err) {
+      // network error — continue retrying until timeout
+    }
+
+    if (Date.now() - start > timeoutMs) {
+      stopped = true;
+      callback({ status: 'FAILED', error: 'Timeout lors de l\'attente du job' });
+      return;
+    }
+
+    setTimeout(check, intervalMs);
+  }
+
+  check();
+  return () => { stopped = true; };
+}
+
 function showRadarOverlay(target) {
   elements.hudRadarOverlay.classList.remove('hidden');
   elements.radarTargetDisplay.textContent = target;
