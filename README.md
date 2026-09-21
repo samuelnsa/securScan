@@ -47,10 +47,11 @@
 * Filtrage par site (`Tous les sites`, `site1.com`, `site2.com`...) et par niveau de sévérité (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`).
 * Double mode d'affichage : **🗂️ Classé par Site** et **📋 Liste Globale**.
 
-### 5. 🌐 Pages Détaillées Dédiées par Site
+### 5. 🌐 Pages Détaillées Dédiées par Site & Export PDF
 * Accès instantané en 1 clic depuis le Bento Dashboard.
 * Empreintes technologiques détectées, certificat SSL/TLS, courbe d'évolution des notes et liste complète des solutions assignées.
-* Export de rapports autonomes HTML et JSON.
+* **Export de rapports PDF & HTML** : Génération de rapports exécutifs prêts à imprimer ou à transmettre aux équipes techniques et clients.
+* **Design Responsive & Cyber-Spiderweb** : Interface adaptative optimisée pour smartphones, tablettes et ordinateurs de bureau.
 
 ### 6. 📉 Détection Automatisée de Régressions & Diff Comparatif
 * Suivi dans **SQLite local** (`data/securscan.db`).

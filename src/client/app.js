@@ -54,6 +54,7 @@ const elements = {
   btnDetailCompare: document.getElementById('btn-detail-compare'),
   btnDetailRescan: document.getElementById('btn-detail-rescan'),
   btnDetailExportHtml: document.getElementById('btn-detail-export-html'),
+  btnDetailExportPdf: document.getElementById('btn-detail-export-pdf'),
   detailHeroIcon: document.getElementById('detail-hero-icon'),
   detailSiteHostname: document.getElementById('detail-site-hostname'),
   detailSiteLink: document.getElementById('detail-site-link'),
@@ -110,6 +111,7 @@ const elements = {
   btnDrawerRescan: document.getElementById('btn-drawer-rescan'),
   btnDrawerCompare: document.getElementById('btn-drawer-compare'),
   btnDrawerExportHtml: document.getElementById('btn-drawer-export-html'),
+  btnDrawerExportPdf: document.getElementById('btn-drawer-export-pdf'),
   btnDrawerExportJson: document.getElementById('btn-drawer-export-json'),
   btnDrawerAutoHarden: document.getElementById('btn-drawer-auto-harden'),
 
@@ -125,6 +127,7 @@ const elements = {
   btnCopyFullPatch: document.getElementById('btn-copy-full-patch'),
   btnDownloadPatch: document.getElementById('btn-download-patch'),
   downloadFilenameLbl: document.getElementById('download-filename-lbl'),
+  btnCloseStudioModal: document.getElementById('btn-close-studio-modal'),
   btnApplyAllHardening: document.getElementById('btn-apply-all-hardening'),
 
   // Scan Comparison Modal
@@ -466,7 +469,7 @@ function renderTilesGrid() {
       <div class="service-tile-card" id="tile-${site.id}" onclick="if(!event.target.closest('.tile-actions') && !event.target.closest('a') && !event.target.closest('button')) window.openSiteDetailPage('${site.id}')" title="Cliquer pour ouvrir la page détaillée de ${site.hostname}">
         
         <!-- Cyber Spiderweb Corner Ornament -->
-        <svg class="cyber-spiderweb-corner top-right" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 45px; height: 45px; opacity: 0.35;">
+        <svg class="cyber-spiderweb-corner top-right" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 48px; height: 48px; opacity: 0.35;">
           <path d="M60 0 L0 0 M60 0 L60 60 M60 0 L15 45 M60 0 L30 30 M60 0 L45 15" stroke="currentColor" stroke-width="1.2"/>
           <path d="M60 12 Q48 12 48 0" stroke="currentColor" stroke-width="1.2"/>
           <path d="M60 26 Q34 26 34 0" stroke="currentColor" stroke-width="1.2"/>
@@ -506,30 +509,21 @@ function renderTilesGrid() {
             </div>
           </div>
 
-          <!-- 1-Click Interactive Banner -->
+          <!-- Interactive Banner -->
           <div class="tile-one-click-indicator">
-            <span>⚡ PAGE DÉTAILLÉE &amp; SOLUTIONS</span>
+            <span>⚡ RAPPORT DÉTAILLÉ &amp; SOLUTIONS</span>
             <span>1-CLIC ➔</span>
           </div>
         </div>
 
         <div class="tile-actions" onclick="event.stopPropagation()">
           <button class="btn-tile-primary" onclick="event.stopPropagation(); window.openSiteDetailPage('${site.id}')" title="Ouvrir la page détaillée avec toutes les failles et leurs solutions">
-            🔍 Page Détaillée (1-Clic)
+            🔍 Fiche &amp; Solutions
           </button>
-          <button class="btn-tile-icon" title="Aperçu rapide (Drawer)" onclick="event.stopPropagation(); window.inspectSite('${site.id}')">
-            📊
+          <button class="btn-tile-action" title="Lancer un nouvel audit immédiat" onclick="event.stopPropagation(); window.quickAuditTarget('${site.target_url}')">
+            🔄 Re-scanner
           </button>
-          <button class="btn-tile-icon" title="Sécurisation Complète en 1 Clic" onclick="event.stopPropagation(); window.openHardeningForSite('${site.id}')">
-            ⚡
-          </button>
-          <button class="btn-tile-icon" title="Lancer un audit immédiat" onclick="event.stopPropagation(); window.quickAuditTarget('${site.target_url}')">
-            🔄
-          </button>
-          <a href="${site.target_url}" target="_blank" rel="noopener noreferrer" class="btn-tile-icon" title="Ouvrir le site" onclick="event.stopPropagation()">
-            ↗
-          </a>
-          <button class="btn-tile-icon danger" title="Supprimer la tuile" onclick="event.stopPropagation(); window.deleteTargetSite('${site.id}')">
+          <button class="btn-tile-icon danger" title="Supprimer la cible" onclick="event.stopPropagation(); window.deleteTargetSite('${site.id}')">
             🗑️
           </button>
         </div>
@@ -663,6 +657,13 @@ function setupDrawer() {
     if (state.activeSiteDetails?.site?.id) {
       window.location.href = `/api/sites/${state.activeSiteDetails.site.id}/export`;
       showToast("Génération et téléchargement du rapport HTML...", "success");
+    }
+  });
+
+  elements.btnDrawerExportPdf?.addEventListener('click', () => {
+    if (state.activeSiteDetails?.site?.id) {
+      window.open(`/api/sites/${state.activeSiteDetails.site.id}/export?print=1`, '_blank');
+      showToast("Ouverture de l'export PDF...", "success");
     }
   });
 
@@ -891,35 +892,9 @@ function setupHardeningStudio() {
     a.remove();
   });
 
-  // Appliquer & Résoudre tout
-  elements.btnApplyAllHardening?.addEventListener('click', async () => {
-    const siteId = state.activeSiteDetails?.site?.id;
-    if (!siteId) return;
-
-    try {
-      const res = await fetch(`/api/sites/${siteId}/resolve-all`, { method: 'POST' });
-      if (res.ok) {
-        logToFeed(`Sécurisation complète appliquée pour ${state.activeSiteDetails.site.hostname}. Toutes les failles ont été résolues !`, 'SUCCESS');
-        showToast("Kit d'auto-sécurisation appliqué avec succès !", "success");
-        elements.hardeningStudioModal.classList.add('hidden');
-        
-        handleRegressionAlert({
-          isInitialScan: false,
-          hasRegression: false,
-          scoreDiff: +55,
-          newIssues: [],
-          resolvedIssues: [],
-          alerts: [{
-            message: `Félicitations ! Le kit de durcissement complet a été appliqué. Posture de sécurité portée à A+ (95/100).`
-          }]
-        });
-
-        await loadDashboardData();
-        window.inspectSite(siteId);
-      }
-    } catch (err) {
-      showToast("Erreur lors de l'application: " + err.message, "error");
-    }
+  // Fermer le studio modal
+  elements.btnCloseStudioModal?.addEventListener('click', () => {
+    elements.hardeningStudioModal?.classList.add('hidden');
   });
 }
 
@@ -1409,24 +1384,20 @@ function renderSingleRemediationItem(v, i, hostname, showSiteBadge = false) {
         <!-- Bottom Actions -->
         <div class="rem-actions-bar">
           <div style="display: flex; align-items: center; gap: 0.75rem;">
-            ${!isResolved ? `
-              <button class="btn-hud-action" style="padding: 4px 12px; font-size: 0.78rem;" onclick="window.quickResolveVuln('${v.id}')">
-                ✅ Appliquer ce correctif
-              </button>
-            ` : `
-              <span class="text-neon-green font-mono" style="font-size: 0.8rem;">✓ Faille marquée comme corrigée</span>
-            `}
-            <button class="btn-ghost-sm" style="padding: 4px 10px; font-size: 0.75rem;" onclick="window.openSiteDetailPage('${v.site_id}')" title="Voir la fiche complète de ce site">
+            <button class="btn-copy-code" style="position: static; padding: 5px 12px; font-size: 0.8rem;" onclick="window.copyCode(this, \`${encodeURIComponent(snippetCode)}\`)">
+              📋 Copier la solution
+            </button>
+            <button class="btn-ghost-sm" style="padding: 5px 10px; font-size: 0.75rem;" onclick="window.openSiteDetailPage('${v.site_id}')" title="Voir la fiche complète de ce site">
               🔍 Voir page site
             </button>
           </div>
 
           <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <span class="text-muted font-mono" style="font-size: 0.75rem;">STATUT :</span>
+            <span class="text-muted font-mono" style="font-size: 0.75rem;">SUIVI AUDIT :</span>
             <select class="status-dropdown" onchange="window.updateVulnStatus('${v.id}', this.value)">
               <option value="OPEN" ${v.status === 'OPEN' ? 'selected' : ''}>🔴 À Corriger (Ouvert)</option>
               <option value="IN_PROGRESS" ${v.status === 'IN_PROGRESS' ? 'selected' : ''}>🟡 En cours de traitement</option>
-              <option value="RESOLVED" ${v.status === 'RESOLVED' ? 'selected' : ''}>🟢 Résolu / Corrigé</option>
+              <option value="RESOLVED" ${v.status === 'RESOLVED' ? 'selected' : ''}>🟢 Résolu / Validé</option>
               <option value="IGNORED" ${v.status === 'IGNORED' ? 'selected' : ''}>⚪ Faux positif / Ignoré</option>
             </select>
           </div>
@@ -1434,22 +1405,6 @@ function renderSingleRemediationItem(v, i, hostname, showSiteBadge = false) {
       </div>
     </div>
   `;
-}
-
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <span class="text-muted font-mono" style="font-size: 0.75rem;">STATUT :</span>
-              <select class="status-dropdown" onchange="window.updateVulnStatus('${v.id}', this.value)">
-                <option value="OPEN" ${v.status === 'OPEN' ? 'selected' : ''}>🔴 À Corriger (Ouvert)</option>
-                <option value="IN_PROGRESS" ${v.status === 'IN_PROGRESS' ? 'selected' : ''}>🟡 En cours de traitement</option>
-                <option value="RESOLVED" ${v.status === 'RESOLVED' ? 'selected' : ''}>🟢 Résolu / Corrigé</option>
-                <option value="IGNORED" ${v.status === 'IGNORED' ? 'selected' : ''}>⚪ Faux positif / Ignoré</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-  }).join('');
 }
 
 function getIndividualSnippet(code, stack, hostname = 'example.com') {
@@ -1596,6 +1551,13 @@ function setupSiteDetailView() {
     if (state.currentDetailSiteId) {
       window.location.href = `/api/sites/${state.currentDetailSiteId}/export`;
       showToast("Génération du rapport HTML complet...", "success");
+    }
+  });
+
+  elements.btnDetailExportPdf?.addEventListener('click', () => {
+    if (state.currentDetailSiteId) {
+      window.open(`/api/sites/${state.currentDetailSiteId}/export?print=1`, '_blank');
+      showToast("Ouverture de l'export PDF / Impression...", "success");
     }
   });
 
@@ -1890,22 +1852,23 @@ function renderSiteSolutionsList(vulns) {
 
           <!-- Bottom Action Bar -->
           <div class="solution-card-footer">
-            <div>
-              ${!isResolved ? `
-                <button class="btn-hud-primary" style="padding: 6px 14px; font-size: 0.82rem;" onclick="window.applyIndividualSolution('${v.id}')">
-                  ✅ Appliquer cette solution & Marquer comme résolue
-                </button>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <button class="btn-copy-code" style="position: static; padding: 6px 14px; font-size: 0.82rem;" onclick="window.copyCode(this, \`${encodeURIComponent(snippetCode)}\`)">
+                📋 Copier cette solution
+              </button>
+              ${isResolved ? `
+                <span class="text-neon-green font-mono" style="font-size: 0.85rem; font-weight: 600;">✓ Faille notée comme résolue</span>
               ` : `
-                <span class="text-neon-green font-mono" style="font-size: 0.85rem; font-weight: 600;">✓ Cette solution a été appliquée et validée pour cette cible</span>
+                <span class="text-muted font-mono" style="font-size: 0.82rem;">💡 Recommandation à déployer sur votre serveur</span>
               `}
             </div>
 
             <div style="display: flex; align-items: center; gap: 0.75rem;">
-              <span class="text-muted font-mono" style="font-size: 0.78rem;">STATUT :</span>
+              <span class="text-muted font-mono" style="font-size: 0.78rem;">STATUT AUDIT :</span>
               <select class="status-dropdown" onchange="window.updateVulnStatus('${v.id}', this.value)">
                 <option value="OPEN" ${v.status === 'OPEN' ? 'selected' : ''}>🔴 À Corriger (Ouvert)</option>
                 <option value="IN_PROGRESS" ${v.status === 'IN_PROGRESS' ? 'selected' : ''}>🟡 En cours</option>
-                <option value="RESOLVED" ${v.status === 'RESOLVED' ? 'selected' : ''}>🟢 Résolu / Corrigé</option>
+                <option value="RESOLVED" ${v.status === 'RESOLVED' ? 'selected' : ''}>🟢 Résolu / Validé</option>
                 <option value="IGNORED" ${v.status === 'IGNORED' ? 'selected' : ''}>⚪ Ignoré</option>
               </select>
             </div>

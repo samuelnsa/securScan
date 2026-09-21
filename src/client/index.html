@@ -15,8 +15,23 @@
   <!-- Futuristic Holographic Background Elements -->
   <div class="hud-scanline"></div>
   <div class="glow-orb orb-cyan"></div>
-  <div class="glow-orb orb-purple"></div>
-  <div class="hud-grid-background"></div>
+  <!-- Ambient Cyber-Spiderweb Overlays -->
+  <svg class="bg-spiderweb-ambient top-left-web" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0 0 L200 0 M0 0 L0 200 M0 0 L180 60 M0 0 L140 140 M0 0 L60 180" stroke="currentColor" stroke-width="1.2"/>
+    <path d="M0 40 Q40 40 40 0" stroke="currentColor" stroke-width="1.2"/>
+    <path d="M0 80 Q80 80 80 0" stroke="currentColor" stroke-width="1.2"/>
+    <path d="M0 130 Q130 130 130 0" stroke="currentColor" stroke-width="1.2"/>
+    <path d="M0 180 Q180 180 180 0" stroke="currentColor" stroke-width="1.2"/>
+    <circle cx="0" cy="0" r="3.5" fill="var(--neo-cyan)"/>
+  </svg>
+  <svg class="bg-spiderweb-ambient bottom-right-web" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M200 200 L0 200 M200 200 L200 0 M200 200 L20 140 M200 200 L60 60 M200 200 L140 20" stroke="currentColor" stroke-width="1.2"/>
+    <path d="M200 160 Q160 160 160 200" stroke="currentColor" stroke-width="1.2"/>
+    <path d="M200 120 Q120 120 120 200" stroke="currentColor" stroke-width="1.2"/>
+    <path d="M200 70 Q70 70 70 200" stroke="currentColor" stroke-width="1.2"/>
+    <path d="M200 20 Q20 20 20 200" stroke="currentColor" stroke-width="1.2"/>
+    <circle cx="200" cy="200" r="3.5" fill="var(--neo-yellow)"/>
+  </svg>
 
   <!-- Main Homarr-style App Shell -->
   <div class="app-layout">
@@ -25,6 +40,13 @@
     <header class="hud-header">
       <div class="header-left">
         <div class="brand-container">
+          <!-- Cyber-Spiderweb integrated in Brand Logo -->
+          <svg class="brand-spiderweb-halo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M50 50 L0 0 M50 50 L50 0 M50 50 L100 0 M50 50 L100 50 M50 50 L100 100 M50 50 L50 100 M50 50 L0 100 M50 50 L0 50" stroke="currentColor" stroke-width="1"/>
+            <polygon points="50,20 80,50 50,80 20,50" stroke="currentColor" stroke-width="1" fill="none"/>
+            <polygon points="50,32 68,50 50,68 32,50" stroke="currentColor" stroke-width="1" fill="none"/>
+            <circle cx="50" cy="50" r="3" fill="var(--neo-cyan)"/>
+          </svg>
           <div class="hologram-shield">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
@@ -144,6 +166,13 @@
         
         <!-- Widget 1: Security Holographic Gauge -->
         <div class="bento-widget score-radar-widget">
+          <!-- Cyber Spiderweb Corner -->
+          <svg class="cyber-spiderweb-corner top-right" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M60 0 L0 0 M60 0 L60 60 M60 0 L15 45 M60 0 L30 30 M60 0 L45 15" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M60 15 Q45 15 45 0" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M60 30 Q30 30 30 0" stroke="currentColor" stroke-width="1.2"/>
+            <circle cx="60" cy="0" r="2.5" fill="var(--neo-cyan)"/>
+          </svg>
           <div class="widget-header">
             <div class="widget-title">
               <span class="hud-icon">🛡️</span> POSTURE GLOBALE DE DÉFENSE
@@ -180,6 +209,13 @@
 
         <!-- Widget 2: SSL/TLS Expiration Watcher (Homarr Widget style) -->
         <div class="bento-widget ssl-watcher-widget">
+          <!-- Cyber Spiderweb Corner -->
+          <svg class="cyber-spiderweb-corner top-right" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M60 0 L0 0 M60 0 L60 60 M60 0 L15 45 M60 0 L30 30 M60 0 L45 15" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M60 15 Q45 15 45 0" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M60 30 Q30 30 30 0" stroke="currentColor" stroke-width="1.2"/>
+            <circle cx="60" cy="0" r="2.5" fill="var(--neo-cyan)"/>
+          </svg>
           <div class="widget-header">
             <div class="widget-title">
               <span class="hud-icon">🔒</span> VEILLEUR DE CERTIFICATS SSL/TLS
@@ -196,6 +232,13 @@
 
         <!-- Widget 3: Live Radar & Threat Telemetry Feed -->
         <div class="bento-widget feed-widget">
+          <!-- Cyber Spiderweb Corner -->
+          <svg class="cyber-spiderweb-corner top-right" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M60 0 L0 0 M60 0 L60 60 M60 0 L15 45 M60 0 L30 30 M60 0 L45 15" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M60 15 Q45 15 45 0" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M60 30 Q30 30 30 0" stroke="currentColor" stroke-width="1.2"/>
+            <circle cx="60" cy="0" r="2.5" fill="var(--neo-purple)"/>
+          </svg>
           <div class="widget-header">
             <div class="widget-title">
               <span class="hud-icon">📡</span> FLUX DE TÉLÉMÉTRIE DAST
@@ -334,8 +377,11 @@
         </div>
 
         <div class="site-detail-actions">
+          <button class="btn-hud-secondary glow-pdf" id="btn-detail-export-pdf" title="Exporter le rapport d'audit au format PDF">
+            📑 Exporter PDF
+          </button>
           <button class="btn-hud-primary glow" id="btn-detail-auto-harden" title="Générer un patch global pour ce site">
-            ⚡ Auto-Hardening Studio
+            ⚡ Hardening Studio
           </button>
           <button class="btn-hud-secondary" id="btn-detail-compare" title="Comparer les scans de ce site">
             ⚖️ Comparer Scans
@@ -528,8 +574,11 @@
           </div>
 
           <div class="drawer-actions-bar">
+            <button class="btn-hud-secondary glow-pdf" id="btn-drawer-export-pdf" title="Exporter le rapport au format PDF">
+              📑 Exporter PDF
+            </button>
             <button class="btn-hud-primary glow" id="btn-drawer-auto-harden" title="Générer un patch complet">
-              ⚡ Sécurisation Complète
+              ⚡ Guide de Sécurisation
             </button>
             <button class="btn-hud-secondary" id="btn-drawer-compare" title="Comparer les deux derniers scans">
               ⚖️ Comparer Scans
@@ -555,9 +604,13 @@
       <div class="hud-modal-card hardening-modal-card">
         <div class="modal-header">
           <div class="hardening-title-box">
-            <span class="hud-icon" style="font-size: 1.5rem;">⚡</span>
+            <!-- Mini cyber spiderweb icon -->
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--neo-cyan); flex-shrink: 0;">
+              <path d="M12 2 L12 22 M2 12 L22 12 M4.9 4.9 L19.1 19.1 M19.1 4.9 L4.9 19.1" stroke-width="1.2"/>
+              <polygon points="12,6 18,12 12,18 6,12" stroke-width="1.2"/>
+            </svg>
             <div>
-              <h3>AUTO-HARDENING STUDIO // PATCH GLOBAL EN 1 CLIC</h3>
+              <h3>HARDENING STUDIO // GUIDE &amp; PATCH MULTI-STACK</h3>
               <span class="drawer-url font-mono" id="hardening-modal-hostname">example.com</span>
             </div>
           </div>
@@ -599,8 +652,8 @@
           <button class="btn-hud-ghost" id="btn-download-patch">
             📥 Télécharger le fichier (<span id="download-filename-lbl">patch.conf</span>)
           </button>
-          <button class="btn-hud-primary glow" id="btn-apply-all-hardening">
-            ✅ Appliquer & Marquer Toutes les Failles comme Résolues
+          <button class="btn-hud-primary glow" id="btn-close-studio-modal">
+            ✓ Fermer le studio
           </button>
         </div>
       </div>
