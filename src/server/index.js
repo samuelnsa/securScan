@@ -426,7 +426,11 @@ app.use((req, res) => {
   res.sendFile(path.join(clientDir, 'index.html'));
 });
 
-// Démarrage du serveur avec gestion dynamique du port
+// Export app pour Vercel / serverless
+export { app };
+export default app;
+
+// Démarrage du serveur local avec gestion dynamique du port
 function startServer(portToTry) {
   const server = app.listen(portToTry, () => {
     console.log(`
@@ -450,4 +454,7 @@ function startServer(portToTry) {
   });
 }
 
-startServer(PORT);
+// Ne pas écouter si exécuté comme fonction serverless Vercel
+if (!process.env.VERCEL) {
+  startServer(PORT);
+}

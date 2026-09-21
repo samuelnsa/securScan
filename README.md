@@ -137,5 +137,24 @@ hackerr/
 
 ---
 
+## ☁️ Déploiement en Ligne
+
+### 1. Déploiement sur Vercel (Recommandé Full-Stack)
+Le projet est pré-configuré pour Vercel grâce à `vercel.json` et `api/index.js` :
+1. Connectez votre compte GitHub sur [vercel.com](https://vercel.com).
+2. Importez le dépôt `samuelnsa/securScan`.
+3. Cliquez sur **Deploy** — Vercel détecte automatiquement la configuration serverless et le client statique.
+
+### 2. Déploiement sur Render ou Railway (VPS / Serveur Persistant)
+Idéal pour conserver la persistance locale SQLite et exécuter les scans sans limite de temps serverless :
+- **Build Command** : `npm install`
+- **Start Command** : `npm start`
+- **Environment** : Node.js (v22+)
+
+### 3. Déploiement sur Netlify
+Le fichier `netlify.toml` est configuré pour servir le client statique situé dans `src/client`.
+
+---
+
 ## 📄 Licence
 Ce projet est sous licence ISC.
