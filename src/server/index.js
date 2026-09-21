@@ -55,8 +55,8 @@ app.disable('x-powered-by');
 
 // Additional strict headers not covered by Helmet defaults
 app.use((req, res, next) => {
-  // CSP: restrict to same-origin and trusted inline/styles where necessary
-  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; object-src 'none'; frame-ancestors 'self'; base-uri 'self';");
+  // CSP: restrict to same-origin and allow Google Fonts used by the client
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self'; object-src 'none'; frame-ancestors 'self'; base-uri 'self';");
   // Anti-clickjacking
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   // Prevent MIME sniffing
@@ -65,6 +65,16 @@ app.use((req, res, next) => {
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   // Permissions-Policy (formerly Feature-Policy) - tighten browser APIs
   res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), payment=()');
+  // HSTS: enable in production via env var (only if running behind HTTPS)
+  try {
+    const enableHsts = (process.env.ENABLE_HSTS || 'false').toLowerCase();
+    if (enableHsts === 'true' || enableHsts === '1') {
+      // 180 days HSTS, include subdomains, preload directive left to operator
+      res.setHeader('Strict-Transport-Security', 'max-age=15552000; includeSubDomains');
+    }
+  } catch (e) {
+    // ignore
+  }
   next();
 });
 
