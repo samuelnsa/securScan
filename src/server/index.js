@@ -112,32 +112,48 @@ app.post('/api/scan', async (req, res) => {
     return res.status(400).json({ error: "L'URL de la cible est obligatoire." });
   }
 
+  // Create or get site entry immediately
+  let site;
   try {
-    // Obtenir ou créer l'entrée de site
-    const site = getOrCreateSite(url);
-
-    // Récupérer le scan précédent pour l'analyse de régression
-    const previousScan = getLastScanForSite(site.id);
-
-    // Exécuter le scan de sécurité
-    const report = await scanTarget(url);
-
-    // Analyser les régressions par rapport au scan antérieur
-    const regression = analyzeRegression(previousScan, report);
-
-    // Enregistrer le nouveau scan et synchroniser les vulnérabilités
-    const { scanId } = saveScan(site.id, report, regression);
-
-    return res.json({
-      success: true,
-      siteId: site.id,
-      scanId,
-      report,
-      regression
-    });
+    site = getOrCreateSite(url);
   } catch (err) {
-    console.error('Erreur lors du scan :', err);
-    return res.status(500).json({ error: err.message || "Erreur interne pendant l'audit." });
+    console.error('Invalid URL in /api/scan:', err.message);
+    return res.status(400).json({ error: 'URL invalide : ' + err.message });
+  }
+
+  // If running in a serverless environment (Vercel/Lambda), do not block the request:
+  // respond 202 Accepted and run the scan asynchronously in background.
+  const isServerless = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME || !!process.env.NETLIFY;
+
+  if (isServerless) {
+    const jobId = 'job_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+    console.log(`Accepted scan job ${jobId} for site ${site.id} (${url})`);
+    // Run asynchronously without awaiting to avoid request timeout in serverless
+    (async () => {
+      try {
+        const previousScan = getLastScanForSite(site.id);
+        const report = await scanTarget(url, { timeout: 30000, sslTimeout: 10000 });
+        const regression = analyzeRegression(previousScan, report);
+        saveScan(site.id, report, regression);
+        console.log(`Scan job ${jobId} completed for site ${site.id}`);
+      } catch (err) {
+        console.error(`Scan job ${jobId} failed for site ${site.id}:`, err && err.stack ? err.stack : err);
+      }
+    })();
+
+    return res.status(202).json({ success: true, siteId: site.id, jobId, message: 'Scan lancé en tâche de fond. Le rapport sera disponible dans l’historique du site.' });
+  }
+
+  // Non-serverless: run scan synchronously and return full report (dev/local)
+  try {
+    const previousScan = getLastScanForSite(site.id);
+    const report = await scanTarget(url);
+    const regression = analyzeRegression(previousScan, report);
+    const { scanId } = saveScan(site.id, report, regression);
+    return res.json({ success: true, siteId: site.id, scanId, report, regression });
+  } catch (err) {
+    console.error('Erreur lors du scan (sync):', err && err.stack ? err.stack : err);
+    return res.status(500).json({ error: err.message || 'Erreur interne pendant l\'audit.' });
   }
 });
 
