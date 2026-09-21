@@ -136,6 +136,9 @@ const state = {
   btnRescanAll: document.getElementById('btn-rescan-all')
 };
 
+// Backwards-compatible alias: many handlers expect `elements`
+const elements = state;
+
 // Initialisation
 document.addEventListener('DOMContentLoaded', () => {
   startHudClock();
