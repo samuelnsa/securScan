@@ -35,13 +35,30 @@ app.use(helmet({
 }));
 
 // CORS: restrict to known origins via env or fallback to localhost during dev
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000').split(',').map(s => s.trim()).filter(Boolean);
+const rawAllowed = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000').split(',').map(s => s.trim()).filter(Boolean);
+const allowedOrigins = new Set(rawAllowed);
+const allowedHostnames = new Set(rawAllowed.map(o => {
+  try { return new URL(o).hostname; } catch { return o; }
+}));
+
 app.use(cors({
   origin: function (origin, callback) {
+    // No origin (curl, server-side) -> allow
     if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      return callback(null, true);
+
+    // Exact origin match
+    if (allowedOrigins.has(origin)) return callback(null, true);
+
+    // Hostname match (e.g., allowedOrigins contains secur-scan.vercel.app or example.com)
+    try {
+      const host = new URL(origin).hostname;
+      if (allowedHostnames.has(host)) return callback(null, true);
+    } catch (e) {
+      // ignore parse errors
     }
+
+    // Diagnostic log to help troubleshooting in production
+    console.warn(`CORS blocked origin: ${origin}`);
     return callback(new Error('Origin not allowed by CORS'));
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
