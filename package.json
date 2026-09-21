@@ -30,6 +30,9 @@
     "mocha": "^10.2.0",
     "supertest": "^6.3.3"
   },
+  "bin": {
+    "securscan-worker": "src/server/worker.js"
+  },
   "engines": {
     "node": ">=22.0.0"
   }

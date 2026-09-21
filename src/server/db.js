@@ -71,6 +71,22 @@ export function initDatabase() {
     CREATE INDEX IF NOT EXISTS idx_scans_site_id ON scans(site_id);
     CREATE INDEX IF NOT EXISTS idx_vulns_site_id ON vulnerabilities(site_id);
     CREATE INDEX IF NOT EXISTS idx_vulns_status ON vulnerabilities(status);
+    
+    CREATE TABLE IF NOT EXISTS jobs (
+      id TEXT PRIMARY KEY,
+      site_id TEXT,
+      url TEXT NOT NULL,
+      status TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      started_at TEXT,
+      finished_at TEXT,
+      scan_id TEXT,
+      result_json TEXT,
+      error TEXT,
+      FOREIGN KEY (site_id) REFERENCES sites (id) ON DELETE SET NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status);
   `);
 }
 

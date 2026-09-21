@@ -156,6 +156,36 @@ export function saveScan(siteId, report, regression) {
   return { scanId };
 }
 
+// Jobs: enqueue and status helpers (for serverless-friendly background processing)
+export function createJob(siteId, url) {
+  const jobId = 'job_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+  const now = new Date().toISOString();
+  const stmt = db.prepare(`INSERT INTO jobs (id, site_id, url, status, created_at) VALUES (?, ?, ?, 'PENDING', ?)`);
+  stmt.run(jobId, siteId, url, now);
+  return { jobId, createdAt: now };
+}
+
+export function updateJobStarted(jobId) {
+  const now = new Date().toISOString();
+  db.prepare('UPDATE jobs SET status = ?, started_at = ? WHERE id = ?').run('IN_PROGRESS', now, jobId);
+}
+
+export function completeJobSuccess(jobId, scanId, result) {
+  const now = new Date().toISOString();
+  db.prepare('UPDATE jobs SET status = ?, finished_at = ?, scan_id = ?, result_json = ? WHERE id = ?')
+    .run('COMPLETED', now, scanId, JSON.stringify(result), jobId);
+}
+
+export function completeJobFailure(jobId, errorMsg) {
+  const now = new Date().toISOString();
+  db.prepare('UPDATE jobs SET status = ?, finished_at = ?, error = ? WHERE id = ?')
+    .run('FAILED', now, String(errorMsg).substring(0, 1000), jobId);
+}
+
+export function getJob(jobId) {
+  return db.prepare('SELECT * FROM jobs WHERE id = ?').get(jobId);
+}
+
 export function getAllSites() {
   const sitesStmt = db.prepare('SELECT * FROM sites ORDER BY last_scanned_at DESC');
   const sites = sitesStmt.all();

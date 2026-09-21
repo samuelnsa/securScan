@@ -13,6 +13,11 @@ import {
   getOrCreateSite,
   getLastScanForSite,
   saveScan,
+  createJob,
+  updateJobStarted,
+  completeJobSuccess,
+  completeJobFailure,
+  getJob,
   getAllSites,
   getSiteDetails,
   getScanById,
@@ -126,22 +131,10 @@ app.post('/api/scan', async (req, res) => {
   const isServerless = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME || !!process.env.NETLIFY;
 
   if (isServerless) {
-    const jobId = 'job_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
-    console.log(`Accepted scan job ${jobId} for site ${site.id} (${url})`);
-    // Run asynchronously without awaiting to avoid request timeout in serverless
-    (async () => {
-      try {
-        const previousScan = getLastScanForSite(site.id);
-        const report = await scanTarget(url, { timeout: 30000, sslTimeout: 10000 });
-        const regression = analyzeRegression(previousScan, report);
-        saveScan(site.id, report, regression);
-        console.log(`Scan job ${jobId} completed for site ${site.id}`);
-      } catch (err) {
-        console.error(`Scan job ${jobId} failed for site ${site.id}:`, err && err.stack ? err.stack : err);
-      }
-    })();
-
-    return res.status(202).json({ success: true, siteId: site.id, jobId, message: 'Scan lancé en tâche de fond. Le rapport sera disponible dans l’historique du site.' });
+    const { jobId } = createJob(site.id, url);
+    console.log(`Enqueued job ${jobId} for ${site.id} -> ${url}`);
+    // Do not process here; external worker or scheduled invoker should pick it up.
+    return res.status(202).json({ success: true, siteId: site.id, jobId, message: 'Scan en file d\'attente. Vérifiez /api/scan/status/:jobId' });
   }
 
   // Non-serverless: run scan synchronously and return full report (dev/local)
@@ -155,6 +148,23 @@ app.post('/api/scan', async (req, res) => {
     console.error('Erreur lors du scan (sync):', err && err.stack ? err.stack : err);
     return res.status(500).json({ error: err.message || 'Erreur interne pendant l\'audit.' });
   }
+});
+
+// Job status endpoint
+app.get('/api/scan/status/:jobId', (req, res) => {
+  const job = getJob(req.params.jobId);
+  if (!job) return res.status(404).json({ error: 'Job introuvable' });
+  return res.json({
+    id: job.id,
+    status: job.status,
+    siteId: job.site_id,
+    url: job.url,
+    createdAt: job.created_at,
+    startedAt: job.started_at,
+    finishedAt: job.finished_at,
+    scanId: job.scan_id,
+    error: job.error
+  });
 });
 
 // 2. Récupérer le résumé global
