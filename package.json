@@ -1,0 +1,27 @@
+{
+  "name": "securscan",
+  "version": "1.0.0",
+  "description": "Plateforme d'audit de sécurité web, détection de régressions et guide de remédiation",
+  "main": "src/server/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/server/index.js",
+    "start": "node src/server/index.js",
+    "scan": "node src/scanner/index.js"
+  },
+  "keywords": [
+    "security",
+    "audit",
+    "dast",
+    "vulnerabilities",
+    "cwe",
+    "ssl",
+    "headers"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1"
+  }
+}

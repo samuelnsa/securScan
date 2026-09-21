@@ -1,0 +1,141 @@
+{
+  "scanId": "scan_1789955543834_ecpak",
+  "target": {
+    "inputUrl": "https://example.com",
+    "resolvedUrl": "https://example.com/",
+    "hostname": "example.com",
+    "protocol": "https",
+    "statusCode": 200
+  },
+  "timestamp": "2026-09-21T01:52:23.834Z",
+  "durationMs": 2793,
+  "score": 40,
+  "grade": "D",
+  "verdict": "Sécurité vulnérable. Des lacunes majeures exposent le site à des attaques.",
+  "stats": {
+    "totalChecks": 12,
+    "passedChecks": 5,
+    "failedChecks": 7,
+    "severities": {
+      "CRITICAL": 0,
+      "HIGH": 2,
+      "MEDIUM": 1,
+      "LOW": 2,
+      "INFO": 2
+    }
+  },
+  "ssl": {
+    "subject": "example.com",
+    "issuer": "SSL Corporation",
+    "validFrom": "2026-07-29T22:10:08.000Z",
+    "validTo": "2026-10-27T22:17:21.000Z",
+    "daysRemaining": 36,
+    "protocol": "TLSv1.3",
+    "cipher": "TLS_AES_256_GCM_SHA384 (TLSv1.3)",
+    "san": [
+      "DNS:example.com",
+      "DNS:*.example.com"
+    ],
+    "authorized": true,
+    "serialNumber": "0624D0AB311558780B7D5213B9631831"
+  },
+  "vulnerabilities": [
+    {
+      "code": "MISSING_CSP",
+      "title": "En-tête Content-Security-Policy (CSP) manquant",
+      "severity": "HIGH",
+      "cwe": "CWE-693",
+      "cweTitle": "Protection Mechanism Failure",
+      "description": "Le site ne définit aucune politique de sécurité du contenu. Cela augmente considérablement le risque d'attaques par injection de script (XSS) et d'inclusion de ressources non autorisées.",
+      "remediation": "Ajoutez un en-tête Content-Security-Policy strict limitant les sources de scripts, styles et médias autorisés.",
+      "snippet": "Content-Security-Policy: default-src 'self'; script-src 'self'; object-src 'none'; frame-ancestors 'none';"
+    },
+    {
+      "code": "MISSING_HSTS",
+      "title": "En-tête Strict-Transport-Security (HSTS) manquant",
+      "severity": "HIGH",
+      "cwe": "CWE-319",
+      "cweTitle": "Cleartext Transmission of Sensitive Information",
+      "description": "Le navigateur n'est pas forcé d'utiliser exclusivement HTTPS. Les utilisateurs sont vulnérables aux attaques de rétrogradation SSL/TLS (SSL Stripping) et aux écoutes clandestines (MitM).",
+      "remediation": "Configurez l'en-tête HSTS avec une durée (max-age) minimale de 6 mois (15552000 secondes), idéalement 1 an.",
+      "snippet": "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload"
+    },
+    {
+      "code": "MISSING_X_FRAME_OPTIONS",
+      "title": "Protection contre le Clickjacking manquante (X-Frame-Options / frame-ancestors)",
+      "severity": "MEDIUM",
+      "cwe": "CWE-1021",
+      "cweTitle": "Improper Restriction of Rendered UI Layers or Frames",
+      "description": "Le site peut être intégré dans une iframe invisible sur un site malveillant pour intercepter les clics de l'utilisateur (Clickjacking / UI Redressing).",
+      "remediation": "Ajoutez l'en-tête X-Frame-Options avec la valeur DENY ou SAMEORIGIN, ou la directive CSP frame-ancestors.",
+      "snippet": "X-Frame-Options: DENY\n# Ou via CSP:\nContent-Security-Policy: frame-ancestors 'none';"
+    },
+    {
+      "code": "MISSING_X_CONTENT_TYPE_OPTIONS",
+      "title": "En-tête X-Content-Type-Options: nosniff manquant",
+      "severity": "LOW",
+      "cwe": "CWE-116",
+      "cweTitle": "Improper Encoding or Escaping of Output",
+      "description": "Permet aux navigateurs d'effectuer du reniflage de type MIME (MIME-type sniffing), transformant des fichiers non exécutables (ex: images) en scripts malveillants.",
+      "remediation": "Ajoutez l'en-tête X-Content-Type-Options avec la valeur nosniff.",
+      "snippet": "X-Content-Type-Options: nosniff"
+    },
+    {
+      "code": "MISSING_REFERRER_POLICY",
+      "title": "En-tête Referrer-Policy manquant",
+      "severity": "LOW",
+      "cwe": "CWE-200",
+      "cweTitle": "Exposure of Sensitive Information to an Unauthorized Actor",
+      "description": "Sans Referrer-Policy explicite, des URL complètes avec des paramètres sensibles (jetons, identifiants, emails) peuvent être transmises à des tiers dans l'en-tête Referer.",
+      "remediation": "Définissez Referrer-Policy à strict-origin-when-cross-origin ou no-referrer.",
+      "snippet": "Referrer-Policy: strict-origin-when-cross-origin"
+    },
+    {
+      "code": "MISSING_PERMISSIONS_POLICY",
+      "title": "En-tête Permissions-Policy manquant",
+      "severity": "INFO",
+      "cwe": "CWE-250",
+      "cweTitle": "Execution with Unnecessary Privileges",
+      "description": "Permissions-Policy permet de restreindre l'accès aux fonctionnalités sensibles de l'appareil (caméra, microphone, géolocalisation, capteurs) pour la page et les iframes.",
+      "remediation": "Définissez les autorisations des APIs du navigateur.",
+      "snippet": "Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()"
+    },
+    {
+      "code": "MISSING_SECURITY_TXT",
+      "title": "Fichier standard security.txt (RFC 9116) absent",
+      "severity": "INFO",
+      "cwe": "CWE-1059",
+      "cweTitle": "Incomplete Documentation",
+      "description": "Le fichier standard security.txt permet aux chercheurs en sécurité de contacter rapidement vos équipes en cas de faille découverte.",
+      "remediation": "Créez un fichier /.well-known/security.txt avec votre email de contact et votre clé PGP.",
+      "snippet": "Contact: mailto:security@votre-domaine.com\nExpires: 2027-12-31T23:59:59.000Z"
+    }
+  ],
+  "passedChecks": [
+    {
+      "code": "SSL_TRUSTED",
+      "title": "Certificat SSL/TLS approuvé par une autorité reconnue",
+      "value": "SSL Corporation"
+    },
+    {
+      "code": "SSL_VALIDITY",
+      "title": "Validité du certificat optimale (36 jours restants)",
+      "value": "Expire le 27/10/2026"
+    },
+    {
+      "code": "TLS_VERSION_SECURE",
+      "title": "Protocole TLS moderne (TLSv1.3)",
+      "value": "TLSv1.3"
+    },
+    {
+      "code": "EXPOSED_ENV_FILE_SECURE",
+      "title": "Ressource /.env inaccessible (Code HTTP 404)",
+      "value": "Sécurisé (HTTP 404)"
+    },
+    {
+      "code": "EXPOSED_GIT_REPO_SECURE",
+      "title": "Ressource /.git/HEAD inaccessible (Code HTTP 404)",
+      "value": "Sécurisé (HTTP 404)"
+    }
+  ]
+}

@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SecurScan // Autonomous Cyber-Audit &amp; Defense Platform</title>
+  <meta name="description" content="Tableau de bord de cybersécurité DAST, surveillance passive des applications, détection de régressions et auto-hardening multi-stack.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300f2fe' stroke-width='2'%3E%3Cpath d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z' fill='%230e1424'/%3E%3Ccircle cx='12' cy='11' r='3' fill='%2300f2fe' stroke='%23000' stroke-width='1.5'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="cyber-theme">
+  <!-- Futuristic Holographic Background Elements -->
+  <div class="hud-scanline"></div>
+  <div class="glow-orb orb-cyan"></div>
+  <div class="glow-orb orb-purple"></div>
+  <div class="hud-grid-background"></div>
+
+  <!-- Main Homarr-style App Shell -->
+  <div class="app-layout">
+    
+    <!-- Top Futuristic Control Bar -->
+    <header class="hud-header">
+      <div class="header-left">
+        <div class="brand-container">
+          <div class="hologram-shield">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <circle cx="12" cy="11" r="3" stroke="#00f2fe" stroke-width="2"/>
+            </svg>
+            <div class="shield-pulse"></div>
+          </div>
+          <div class="brand-titles">
+            <div class="brand-title">
+              <span class="neon-cyan">SECUR</span><span class="neon-white">SCAN</span>
+              <span class="hud-version-tag">PRO v2.5</span>
+            </div>
+            <div class="brand-subtitle">AUTONOMOUS CYBER-AUDIT &amp; DEFENSE BOARD</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center Omni-Search Bar (Homarr style) -->
+      <div class="header-center">
+        <div class="omni-search-wrapper">
+          <svg class="search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input 
+            type="text" 
+            id="omni-search-input" 
+            placeholder="Rechercher un service, une cible, une IP ou taper une commande (Ctrl+K)..." 
+            autocomplete="off"
+          />
+          <div class="search-kbd-hint">⌘K</div>
+        </div>
+      </div>
+
+      <!-- Right Telemetry & Actions -->
+      <div class="header-right">
+        <div class="hud-telemetry">
+          <div class="telemetry-item">
+            <span class="telemetry-label">BOUCLIER DAST</span>
+            <span class="telemetry-val text-neon-green"><span class="dot-blink"></span>NOMINAL</span>
+          </div>
+          <div class="telemetry-item">
+            <span class="telemetry-label">HORLOGE UTC</span>
+            <span class="telemetry-val" id="hud-clock">00:00:00</span>
+          </div>
+        </div>
+
+        <div class="header-buttons">
+          <button class="btn-hud-action" id="btn-open-scan-modal" title="Auditer ou ajouter une cible">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>+ Ajouter / Scanner</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Navigation & Board Filter Tabs -->
+    <nav class="board-subnav">
+      <div class="subnav-container">
+        <div class="board-tabs">
+          <button class="board-tab-btn active" data-board-view="board">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            Bento Board Homarr
+          </button>
+          <button class="board-tab-btn" data-board-view="remediation">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+            Centre de Remédiation
+            <span class="hud-badge-count" id="active-vulns-badge">0</span>
+          </button>
+        </div>
+
+        <!-- Grade & Category Quick Filters -->
+        <div class="board-filters">
+          <span class="filter-label">Filtre posture :</span>
+          <button class="pill-filter active" data-filter-grade="ALL">Tous</button>
+          <button class="pill-filter grade-a" data-filter-grade="A">Notes A+/A</button>
+          <button class="pill-filter grade-b" data-filter-grade="B">Note B</button>
+          <button class="pill-filter grade-warn" data-filter-grade="WARN">Critiques & C/D/F</button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Neoflux Cyber Telemetry Ticker Strip -->
+    <div class="neoflux-ticker-wrap">
+      <div class="ticker-track font-mono">
+        <span class="ticker-item"><span class="ticker-dot"></span> DAST PASSIVE AUDIT ENGINE ACTIVE</span>
+        <span class="ticker-item"><span class="ticker-dot yellow"></span> OWASP TOP 10 HARDENING READY</span>
+        <span class="ticker-item"><span class="ticker-dot cyan"></span> MULTI-STACK PATCH GENERATOR (NGINX / APACHE / EXPRESS / NEXTJS / CADDY / VERCEL)</span>
+        <span class="ticker-item"><span class="ticker-dot purple"></span> SSL/TLS X.509 AUTO-MONITORING</span>
+        <span class="ticker-item"><span class="ticker-dot green"></span> ZERO-DAY HEURISTIC MITIGATION</span>
+        <span class="ticker-item"><span class="ticker-dot"></span> DAST PASSIVE AUDIT ENGINE ACTIVE</span>
+        <span class="ticker-item"><span class="ticker-dot yellow"></span> OWASP TOP 10 HARDENING READY</span>
+        <span class="ticker-item"><span class="ticker-dot cyan"></span> MULTI-STACK PATCH GENERATOR (NGINX / APACHE / EXPRESS / NEXTJS / CADDY / VERCEL)</span>
+        <span class="ticker-item"><span class="ticker-dot purple"></span> SSL/TLS X.509 AUTO-MONITORING</span>
+        <span class="ticker-item"><span class="ticker-dot green"></span> ZERO-DAY HEURISTIC MITIGATION</span>
+      </div>
+    </div>
+
+    <!-- Regression Alert Banner -->
+    <div id="regression-banner" class="hud-alert-banner hidden">
+      <div class="alert-left">
+        <div class="alert-holo-icon" id="alert-banner-icon">⚡</div>
+        <div class="alert-message" id="alert-banner-text">
+          <strong>Alerte de régression détectée sur vos cibles.</strong>
+        </div>
+      </div>
+      <button class="btn-close-hud-alert" id="btn-close-alert">&times;</button>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- MAIN VIEW 1: HOMARR-STYLE BENTO BOARD                    -->
+    <!-- ======================================================== -->
+    <main id="view-board" class="board-main-container">
+      
+      <!-- Top Telemetry Widgets Row (Bento Grid Header) -->
+      <section class="bento-telemetry-row">
+        
+        <!-- Widget 1: Security Holographic Gauge -->
+        <div class="bento-widget score-radar-widget">
+          <div class="widget-header">
+            <div class="widget-title">
+              <span class="hud-icon">🛡️</span> POSTURE GLOBALE DE DÉFENSE
+            </div>
+            <span class="widget-tag neon-green" id="widget-shield-status">PROTÉGÉ</span>
+          </div>
+          <div class="widget-body flex-row-center">
+            <div class="holo-gauge">
+              <svg class="holo-circle" viewBox="0 0 100 100">
+                <circle class="circle-bg" cx="50" cy="50" r="40"></circle>
+                <circle class="circle-progress" id="holo-circle-progress" cx="50" cy="50" r="40"></circle>
+              </svg>
+              <div class="holo-inner-text">
+                <span class="holo-grade" id="stat-avg-grade">--</span>
+                <span class="holo-score"><span id="stat-avg-score">0</span>/100</span>
+              </div>
+            </div>
+            <div class="gauge-details">
+              <div class="detail-row">
+                <span class="text-muted">Cibles actives :</span>
+                <span class="detail-val font-mono" id="stat-total-sites">0</span>
+              </div>
+              <div class="detail-row">
+                <span class="text-muted">Scans réalisés :</span>
+                <span class="detail-val font-mono" id="stat-total-scans">0</span>
+              </div>
+              <div class="detail-row">
+                <span class="text-muted">Vulnérabilités :</span>
+                <span class="detail-val font-mono text-neon-red" id="stat-critical-count">0 critiques</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Widget 2: SSL/TLS Expiration Watcher (Homarr Widget style) -->
+        <div class="bento-widget ssl-watcher-widget">
+          <div class="widget-header">
+            <div class="widget-title">
+              <span class="hud-icon">🔒</span> VEILLEUR DE CERTIFICATS SSL/TLS
+            </div>
+            <span class="widget-tag neon-cyan">AUTO-TRACK</span>
+          </div>
+          <div class="widget-body" id="ssl-watcher-body">
+            <div class="empty-widget-state">
+              <div class="pulsing-line"></div>
+              <span>Aucun certificat analysé pour le moment</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Widget 3: Live Radar & Threat Telemetry Feed -->
+        <div class="bento-widget feed-widget">
+          <div class="widget-header">
+            <div class="widget-title">
+              <span class="hud-icon">📡</span> FLUX DE TÉLÉMÉTRIE DAST
+            </div>
+            <span class="widget-tag neon-purple">TEMPS RÉEL</span>
+          </div>
+          <div class="widget-body hud-terminal-feed" id="hud-live-feed">
+            <div class="feed-item">[INIT] SecurScan Core connecté au moteur d'audit passif.</div>
+            <div class="feed-item text-muted">> Prêt pour l'analyse des en-têtes et des certificats...</div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Section: Monitored Services Grid (Homarr App Tiles) -->
+      <section class="services-bento-section">
+        <div class="section-title-bar">
+          <div class="title-with-badge">
+            <h2 class="section-heading">SERVICES & APPLICATIONS MONITORÉS</h2>
+            <span class="section-count-badge" id="services-count">0 CIBLE(S)</span>
+          </div>
+          <div class="section-actions">
+            <button class="btn-ghost-sm" id="btn-rescan-all" title="Lancer un scan séquentiel de toutes les cibles">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+              Tout ré-auditer
+            </button>
+          </div>
+        </div>
+
+        <!-- Homarr App Tiles Grid -->
+        <div class="homarr-tiles-grid" id="homarr-tiles-grid">
+          <!-- Rendered dynamically via JS -->
+          <div class="empty-tiles-placeholder">
+            <div class="empty-radar-anim">
+              <div class="radar-circle"></div>
+              <div class="radar-line"></div>
+            </div>
+            <h3>Aucun service dans le tableau de bord</h3>
+            <p>Ajoutez l'URL de votre premier site web pour déployer la tuile de surveillance et lancer l'audit initial.</p>
+            <button class="btn-hud-primary" onclick="document.getElementById('btn-open-scan-modal').click()">
+              + Déployer une cible
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ======================================================== -->
+    <!-- MAIN VIEW 2: REMEDIATION & CHECKLIST VIEW                -->
+    <!-- ======================================================== -->
+    <main id="view-remediation" class="board-main-container hidden">
+      <div class="remediation-bento-panel">
+        
+        <!-- Cyber Spiderweb Decorative Ornaments -->
+        <svg class="cyber-spiderweb-corner top-right" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M100 0 L0 0 M100 0 L100 100 M100 0 L15 85 M100 0 L35 65 M100 0 L55 45 M100 0 L75 25 M100 0 L88 12" stroke="currentColor" stroke-width="1.2" opacity="0.35"/>
+          <path d="M100 18 Q82 18 82 0" stroke="currentColor" stroke-width="1.2" opacity="0.45"/>
+          <path d="M100 36 Q64 36 64 0" stroke="currentColor" stroke-width="1.2" opacity="0.55"/>
+          <path d="M100 58 Q42 45 42 0" stroke="currentColor" stroke-width="1.2" opacity="0.65"/>
+          <path d="M100 80 Q22 65 22 0" stroke="currentColor" stroke-width="1.2" opacity="0.55"/>
+          <circle cx="100" cy="0" r="3" fill="var(--neo-yellow)"/>
+        </svg>
+
+        <!-- Auto-Hardening Kit Hero Card (Sécurisation Complète) -->
+        <div class="auto-hardening-hero-card">
+          <div class="hero-card-left">
+            <div class="hero-card-icon">⚡</div>
+            <div>
+              <h3>SÉCURISATION COMPLÈTE EN 1 CLIC (AUTO-HARDENING STUDIO)</h3>
+              <p class="text-muted">Générez un patch tout-en-un prêt à injecter (Nginx, Apache, Express, Next.js, Caddy, Vercel) pour corriger simultanément toutes les failles détectées.</p>
+            </div>
+          </div>
+          <button class="btn-hud-primary glow" id="btn-open-hardening-studio">
+            ⚡ Ouvrir l'Auto-Hardening Studio
+          </button>
+        </div>
+
+        <!-- Site Classification & Grouping Control Bar -->
+        <div class="remediation-site-filter-bar">
+          <div class="site-filter-header">
+            <div class="site-filter-title-row">
+              <span class="hud-icon">🕸️</span>
+              <span class="site-filter-title">CLASSIFICATION PAR SITE EXAMINÉ :</span>
+            </div>
+            <div class="site-viewmode-toggle">
+              <button class="btn-viewmode active" id="btn-rem-grouped" title="Classer et regrouper les failles par site">
+                🗂️ Classé par Site
+              </button>
+              <button class="btn-viewmode" id="btn-rem-flat" title="Afficher toutes les failles en liste continue">
+                📋 Liste Globale
+              </button>
+            </div>
+          </div>
+          <div class="site-filter-pills" id="remediation-site-pills">
+            <!-- Dynamically populated: [Tous les sites], [site1.com], [site2.com] -->
+          </div>
+        </div>
+
+        <div class="panel-header-futuristic">
+          <div>
+            <h2 class="panel-heading">SÉCURISATION INDIVIDUELLE // FAILLE PAR FAILLE</h2>
+            <p class="panel-sub">Chaque anomalie est attribuée à son site hôte avec analyse détaillée des vecteurs d'attaque, données exposées et snippets de remédiation.</p>
+          </div>
+
+          <div class="remediation-filters">
+            <button class="btn-filter-rem active" data-filter-sev="ALL">Toutes les failles</button>
+            <button class="btn-filter-rem text-danger" data-filter-sev="CRITICAL">Critiques</button>
+            <button class="btn-filter-rem text-danger" data-filter-sev="HIGH">Élevées</button>
+            <button class="btn-filter-rem text-warning" data-filter-sev="MEDIUM">Moyennes</button>
+            <button class="btn-filter-rem text-info" data-filter-sev="LOW">Faibles</button>
+          </div>
+        </div>
+
+        <div class="remediation-accordion-container" id="remediation-accordion-list">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </main>
+
+    <!-- ======================================================== -->
+    <!-- MAIN VIEW 3: DEDICATED SITE DETAIL & SOLUTIONS PAGE      -->
+    <!-- ======================================================== -->
+    <main id="view-site-detail" class="board-main-container hidden">
+      
+      <!-- Top Breadcrumb & Quick Actions Bar -->
+      <div class="site-detail-nav-bar">
+        <div class="site-breadcrumb">
+          <button class="btn-back-board" id="btn-back-to-board" title="Retourner au Bento Board">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            <span>Bento Dashboard</span>
+          </button>
+          <span class="breadcrumb-separator">/</span>
+          <span class="breadcrumb-site font-mono" id="detail-nav-hostname">example.com</span>
+          <span class="badge-status-dot online"></span>
+        </div>
+
+        <div class="site-detail-actions">
+          <button class="btn-hud-primary glow" id="btn-detail-auto-harden" title="Générer un patch global pour ce site">
+            ⚡ Auto-Hardening Studio
+          </button>
+          <button class="btn-hud-secondary" id="btn-detail-compare" title="Comparer les scans de ce site">
+            ⚖️ Comparer Scans
+          </button>
+          <button class="btn-hud-secondary" id="btn-detail-rescan" title="Lancer un nouvel audit immédiat">
+            🔄 Re-scanner
+          </button>
+          <button class="btn-hud-secondary" id="btn-detail-export-html" title="Télécharger le rapport HTML autonome">
+            📄 Rapport HTML
+          </button>
+        </div>
+      </div>
+
+      <!-- Hero Header for the Target Site -->
+      <section class="site-detail-hero-card">
+        <div class="hero-left">
+          <div class="site-hero-icon" id="detail-hero-icon">🌐</div>
+          <div>
+            <div class="hero-title-row">
+              <h1 class="hero-site-title font-mono" id="detail-site-hostname">example.com</h1>
+              <a href="#" target="_blank" rel="noopener noreferrer" class="btn-hero-link" id="detail-site-link" title="Ouvrir dans un nouvel onglet">
+                <span id="detail-site-url">https://example.com</span> ↗
+              </a>
+            </div>
+            <p class="hero-verdict-sub" id="detail-site-verdict">Analyse de sécurité effectuée.</p>
+            <div class="hero-meta-badges">
+              <span class="meta-pill" id="detail-site-scandate">📅 Audit : Aujourd'hui</span>
+              <span class="meta-pill" id="detail-site-duration">⏱️ 840 ms</span>
+              <span class="meta-pill text-neon-cyan" id="detail-site-ssl">🔒 TLS 1.3</span>
+              <span class="meta-pill" id="detail-site-totalscans">📊 3 scans au total</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Big Holographic Grade Score -->
+        <div class="hero-right">
+          <div class="hero-score-disc">
+            <div class="hero-grade-badge" id="detail-site-grade">A</div>
+            <div class="hero-score-text">
+              <span class="hero-score-val font-mono" id="detail-site-score">85</span>
+              <span class="hero-score-max">/100</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bento Widgets Row for This Specific Site -->
+      <section class="site-detail-bento-grid">
+        
+        <!-- Widget A: Tech Stack Fingerprints -->
+        <div class="bento-widget detail-widget">
+          <div class="widget-header">
+            <div class="widget-title">
+              <span class="hud-icon">🔍</span> TECHNOLOGIES & EMPREINTES DÉTECTÉES
+            </div>
+            <span class="widget-tag neon-cyan">FINGERPRINT</span>
+          </div>
+          <div class="widget-body">
+            <div class="tech-stack-container" id="detail-tech-stack">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Widget B: SSL Certificate Inspector -->
+        <div class="bento-widget detail-widget">
+          <div class="widget-header">
+            <div class="widget-title">
+              <span class="hud-icon">🔒</span> CERTIFICAT SSL / TLS
+            </div>
+            <span class="widget-tag neon-green">X.509</span>
+          </div>
+          <div class="widget-body" id="detail-ssl-body">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Widget C: Scan Evolution Chart -->
+        <div class="bento-widget detail-widget">
+          <div class="widget-header">
+            <div class="widget-title">
+              <span class="hud-icon">📈</span> ÉVOLUTION DE LA POSTURE
+            </div>
+            <span class="widget-tag neon-purple">HISTORIQUE</span>
+          </div>
+          <div class="widget-body">
+            <div class="history-canvas-box" style="height: 100px;">
+              <canvas id="detail-history-canvas" height="100"></canvas>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Section: Detailed Vulnerabilities & Assigned Remediation Solutions -->
+      <section class="site-vulns-solutions-section">
+        <div class="section-title-bar">
+          <div class="title-with-badge">
+            <h2 class="section-heading">VULNÉRABILITÉS & SOLUTIONS REQUISES ASSIGNÉES</h2>
+            <span class="section-count-badge" id="detail-vulns-count">0 FAILLE(S)</span>
+          </div>
+
+          <!-- Filters Bar -->
+          <div class="remediation-filters">
+            <button class="btn-filter-rem active" data-detail-filter="ALL">Toutes</button>
+            <button class="btn-filter-rem text-danger" data-detail-filter="CRITICAL">Critiques</button>
+            <button class="btn-filter-rem text-danger" data-detail-filter="HIGH">Élevées</button>
+            <button class="btn-filter-rem text-warning" data-detail-filter="MEDIUM">Moyennes</button>
+            <button class="btn-filter-rem text-info" data-detail-filter="LOW">Faibles</button>
+            <button class="btn-filter-rem text-success" data-detail-filter="RESOLVED">✓ Résolues</button>
+          </div>
+        </div>
+
+        <!-- List of Vulnerability & Remediation Solution Cards -->
+        <div class="site-solutions-cards-list" id="detail-solutions-list">
+          <!-- Rendered dynamically via JS -->
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ======================================================== -->
+    <!-- SLIDE-OVER DRAWER: DETAILED AUDIT REPORT (HOMARR DRAWER) -->
+    <!-- ======================================================== -->
+    <div id="audit-drawer" class="hud-drawer-overlay hidden">
+      <div class="hud-drawer-panel">
+        <div class="drawer-header">
+          <div class="drawer-title-box">
+            <span class="drawer-badge" id="drawer-site-grade">A</span>
+            <div>
+              <h3 id="drawer-site-hostname">example.com</h3>
+              <span class="drawer-url font-mono" id="drawer-site-url">https://example.com</span>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <button class="btn-hud-ghost-sm" id="btn-drawer-open-page" title="Ouvrir la page détaillée complète pour ce site">
+              🔍 Page Dédiée
+            </button>
+            <button class="btn-close-drawer" id="btn-close-drawer">&times;</button>
+          </div>
+        </div>
+
+        <div class="drawer-body">
+          <!-- Score overview -->
+          <div class="drawer-score-card">
+            <div class="score-card-left">
+              <span class="score-card-number font-mono" id="drawer-score-val">85</span>
+              <span class="score-card-max">/100</span>
+            </div>
+            <div class="score-card-right">
+              <div class="drawer-verdict" id="drawer-verdict-text">Posture satisfaisante</div>
+              <div class="drawer-meta-pills">
+                <span class="meta-pill" id="drawer-timestamp">📅 Aujourd'hui</span>
+                <span class="meta-pill" id="drawer-duration">⏱️ 1200 ms</span>
+                <span class="meta-pill" id="drawer-ssl-proto">🔒 TLS 1.3</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- History Chart -->
+          <div class="drawer-section">
+            <div class="drawer-section-title">ÉVOLUTION CHRONOLOGIQUE DES SCANS</div>
+            <div class="history-canvas-box">
+              <canvas id="drawer-history-canvas" height="90"></canvas>
+            </div>
+          </div>
+
+          <!-- Technology Stack Fingerprint Card -->
+          <div class="drawer-section">
+            <div class="drawer-section-title">STACK TECHNIQUE & EMPREINTES DÉTECTÉES</div>
+            <div class="tech-stack-container" id="drawer-tech-stack">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- SSL Certificate Card -->
+          <div class="drawer-section">
+            <div class="drawer-section-title">INSPECTION CERTIFICAT SSL / TLS</div>
+            <div class="ssl-card-futuristic" id="drawer-ssl-card">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Headers & Exposure Grid -->
+          <div class="drawer-section">
+            <div class="drawer-section-title">MATRICE DES CONTRÔLES DE SÉCURITÉ</div>
+            <div class="headers-matrix-grid" id="drawer-headers-matrix">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <div class="drawer-actions-bar">
+            <button class="btn-hud-primary glow" id="btn-drawer-auto-harden" title="Générer un patch complet">
+              ⚡ Sécurisation Complète
+            </button>
+            <button class="btn-hud-secondary" id="btn-drawer-compare" title="Comparer les deux derniers scans">
+              ⚖️ Comparer Scans
+            </button>
+            <button class="btn-hud-secondary" id="btn-drawer-rescan" title="Lancer un nouvel audit">
+              🔄 Re-scanner
+            </button>
+            <button class="btn-hud-secondary" id="btn-drawer-export-html" title="Télécharger le rapport HTML autonome">
+              📄 Rapport HTML
+            </button>
+            <button class="btn-hud-secondary" id="btn-drawer-export-json" title="Télécharger le rapport JSON brut">
+              💾 JSON
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- MODAL: AUTO-HARDENING STUDIO (SÉCURISATION COMPLÈTE)     -->
+    <!-- ======================================================== -->
+    <div id="hardening-studio-modal" class="hud-modal-overlay hidden">
+      <div class="hud-modal-card hardening-modal-card">
+        <div class="modal-header">
+          <div class="hardening-title-box">
+            <span class="hud-icon" style="font-size: 1.5rem;">⚡</span>
+            <div>
+              <h3>AUTO-HARDENING STUDIO // PATCH GLOBAL EN 1 CLIC</h3>
+              <span class="drawer-url font-mono" id="hardening-modal-hostname">example.com</span>
+            </div>
+          </div>
+          <button class="btn-close-modal" id="btn-close-hardening-modal">&times;</button>
+        </div>
+
+        <!-- Stack Selection Bar -->
+        <div class="stack-selector-container">
+          <span class="filter-label">SÉLECTIONNEZ VOTRE INFRASTRUCTURE / STACK :</span>
+          <div class="stack-tabs-row" id="hardening-stack-tabs">
+            <button class="btn-stack-pill active" data-stack="nginx">🌐 Nginx</button>
+            <button class="btn-stack-pill" data-stack="apache">🪶 Apache</button>
+            <button class="btn-stack-pill" data-stack="express">🟢 Express.js</button>
+            <button class="btn-stack-pill" data-stack="nextjs">▲ Next.js</button>
+            <button class="btn-stack-pill" data-stack="caddy">🔒 Caddy</button>
+            <button class="btn-stack-pill" data-stack="vercel">▲ Vercel</button>
+          </div>
+        </div>
+
+        <!-- Summary of addressed vulnerabilities -->
+        <div class="hardening-badges-row" id="hardening-resolved-summary">
+          <!-- Dynamically filled with checks -->
+        </div>
+
+        <!-- Live Generated Patch Preview Box -->
+        <div class="hardening-editor-box">
+          <div class="editor-header">
+            <div class="editor-filename">
+              <span class="file-icon">📄</span>
+              <span class="font-mono text-neon-cyan" id="hardening-filename">security-hardening.conf</span>
+            </div>
+            <button class="btn-copy-code" id="btn-copy-full-patch">📋 Copier le patch</button>
+          </div>
+          <pre class="editor-code font-mono" id="hardening-code-display">// Génération du patch de sécurité...</pre>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="modal-footer hardening-modal-footer">
+          <button class="btn-hud-ghost" id="btn-download-patch">
+            📥 Télécharger le fichier (<span id="download-filename-lbl">patch.conf</span>)
+          </button>
+          <button class="btn-hud-primary glow" id="btn-apply-all-hardening">
+            ✅ Appliquer & Marquer Toutes les Failles comme Résolues
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- MODAL: ADD / SCAN TARGET DIALOG                          -->
+    <!-- ======================================================== -->
+    <div id="add-target-modal" class="hud-modal-overlay hidden">
+      <div class="hud-modal-card">
+        <div class="modal-header">
+          <h3>+ AJOUTER / AUDITER UNE NOUVELLE CIBLE</h3>
+          <button class="btn-close-modal" id="btn-close-modal">&times;</button>
+        </div>
+        <form id="modal-scan-form" class="modal-form">
+          <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 1rem;">
+            Saisissez l'adresse de votre site ou application web. Une sonde réseau passive analysera immédiatement les en-têtes HTTP, le certificat SSL/TLS et les fichiers sensibles exposés.
+          </p>
+          <div class="form-group">
+            <label for="modal-input-url">URL OU NOM DE DOMAINE</label>
+            <div class="modal-input-wrap">
+              <span class="input-prefix">https://</span>
+              <input 
+                type="text" 
+                id="modal-input-url" 
+                placeholder="mon-application.com ou localhost:8080" 
+                required 
+                autocomplete="off"
+              />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn-hud-ghost" id="btn-cancel-modal">Annuler</button>
+            <button type="submit" class="btn-hud-primary" id="btn-submit-scan">
+              🚀 Lancer l'Audit & Déployer la Tuile
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- RADAR SCANNING OVERLAY -->
+    <div id="hud-radar-overlay" class="hud-radar-overlay hidden">
+      <div class="radar-box">
+        <div class="radar-sweep-disc"></div>
+        <div class="radar-crosshair"></div>
+        <div class="radar-center-blip"></div>
+        <h3 class="radar-title">SONDE DAST EN COURS D'EXÉCUTION</h3>
+        <p class="radar-target-name font-mono" id="radar-target-display">https://example.com</p>
+        <div class="radar-logs font-mono" id="radar-live-logs">
+          <div class="log-row">> Établissement de la connexion socket TLS...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- MODAL: SCAN COMPARISON & REGRESSION DIFF                 -->
+    <!-- ======================================================== -->
+    <div id="scan-compare-modal" class="hud-modal-overlay hidden">
+      <div class="hud-modal-card compare-modal-card">
+        <div class="modal-header">
+          <div class="hardening-title-box">
+            <span class="hud-icon" style="font-size: 1.5rem;">⚖️</span>
+            <div>
+              <h3>COMPARATEUR DE SCANS // DIFF DE SÉCURITÉ</h3>
+              <span class="drawer-url font-mono" id="compare-modal-hostname">example.com</span>
+            </div>
+          </div>
+          <button class="btn-close-modal" id="btn-close-compare-modal">&times;</button>
+        </div>
+
+        <div class="compare-selectors-bar">
+          <div class="compare-sel-col">
+            <label>SCAN DE RÉFÉRENCE (ANCIEN) :</label>
+            <select id="compare-select-scan1" class="hud-select font-mono"></select>
+          </div>
+          <div class="compare-vs-badge">VS</div>
+          <div class="compare-sel-col">
+            <label>SCAN CIBLE (RÉCENT) :</label>
+            <select id="compare-select-scan2" class="hud-select font-mono"></select>
+          </div>
+        </div>
+
+        <div class="compare-results-body" id="compare-results-content">
+          <!-- Dynamically populated -->
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-hud-ghost" id="btn-close-compare-footer">Fermer</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HUD TOAST CONTAINER -->
+    <div id="hud-toast-container" class="hud-toast-container"></div>
+
+    <!-- Footer -->
+    <footer class="hud-footer">
+      <div class="footer-left">
+        <span class="status-indicator"></span>
+        <span>SECURSCAN DEFENSE NETWORK • COMPLIANT WITH OWASP TOP 10 & CWE</span>
+      </div>
+      <div class="footer-right font-mono">
+        SYSTEM LOAD: OPTIMAL • LOCAL SQLITE PERSISTENCE
+      </div>
+    </footer>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
