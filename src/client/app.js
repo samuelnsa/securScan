@@ -11,35 +11,7 @@ const state = {
   activeReport: null,
   filterGrade: 'ALL',
   filterSeverity: 'ALL',
-    // Handle JSON body but gracefully handle 202 Accepted (background job)
-    const status = res.status;
-    let data = null;
-    try { data = await res.json(); } catch (e) { data = null; }
-
-    hideRadarOverlay();
-
-    if (status === 202) {
-      const msg = data?.message || 'Scan lancé en tâche de fond. Le rapport sera disponible bientôt.';
-      showToast(msg, 'info');
-      logToFeed(`Scan mis en file pour ${targetUrl} (job: ${data?.jobId || 'n/a'})`, 'INFO');
-      // Refresh dashboard to pick up newly-created site entry
-      await loadDashboardData();
-      return;
-    }
-
-    if (!res.ok) {
-      showToast("Erreur pendant l'audit : " + (data?.error || 'Erreur inconnue'), "error");
-      logToFeed(`Échec de l'audit pour ${targetUrl}: ${data?.error}`, 'ALERT');
-      return;
-    }
-
-    // Synchronous report returned (local/dev)
-    logToFeed(`Audit complété pour ${data.report.target.hostname} (Note: ${data.report.grade} - Score: ${data.report.score}/100)`, 'SUCCESS');
-    showToast(`Audit de ${data.report.target.hostname} terminé avec succès (Score: ${data.report.score}/100)`, "success");
-    handleRegressionAlert(data.regression);
-
-    await loadDashboardData();
-    window.inspectSite(data.siteId);
+  
   omniSearchInput: document.getElementById('omni-search-input'),
   statAvgGrade: document.getElementById('stat-avg-grade'),
   statAvgScore: document.getElementById('stat-avg-score'),
@@ -579,22 +551,38 @@ async function executeScan(targetUrl) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url: targetUrl })
     });
+    // Parse JSON if present
+    let data = null;
+    try { data = await res.json(); } catch (e) { data = null; }
 
-    const data = await res.json();
     hideRadarOverlay();
 
-    if (!res.ok) {
-      showToast("Erreur pendant l'audit : " + (data.error || 'Erreur inconnue'), "error");
-      logToFeed(`Échec de l'audit pour ${targetUrl}: ${data.error}`, 'ALERT');
+    if (res.status === 202) {
+      showToast(data?.message || 'Scan lancé en tâche de fond.', 'info');
+      logToFeed(`Scan mis en file pour ${targetUrl} (job: ${data?.jobId || 'n/a'})`, 'INFO');
+      await loadDashboardData();
       return;
     }
 
-    logToFeed(`Audit complété pour ${data.report.target.hostname} (Note: ${data.report.grade} - Score: ${data.report.score}/100)`, 'SUCCESS');
-    showToast(`Audit de ${data.report.target.hostname} terminé avec succès (Score: ${data.report.score}/100)`, "success");
-    handleRegressionAlert(data.regression);
+    if (!res.ok) {
+      showToast("Erreur pendant l'audit : " + (data?.error || 'Erreur inconnue'), "error");
+      logToFeed(`Échec de l'audit pour ${targetUrl}: ${data?.error}`, 'ALERT');
+      return;
+    }
 
+    if (data && data.report) {
+      logToFeed(`Audit complété pour ${data.report.target.hostname} (Note: ${data.report.grade} - Score: ${data.report.score}/100)`, 'SUCCESS');
+      showToast(`Audit de ${data.report.target.hostname} terminé avec succès (Score: ${data.report.score}/100)`, "success");
+      handleRegressionAlert(data.regression);
+      await loadDashboardData();
+      window.inspectSite(data.siteId);
+      return;
+    }
+
+    // Fallback
+    showToast('Scan lancé (réponse inattendue du serveur).', 'info');
     await loadDashboardData();
-    window.inspectSite(data.siteId);
+    return;
 
   } catch (err) {
     hideRadarOverlay();
