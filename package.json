@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "node --watch src/server/index.js",
+    "worker": "node src/server/worker.js",
     "start": "node src/server/index.js",
     "scan": "node src/scanner/index.js",
     "test": "mocha --exit"

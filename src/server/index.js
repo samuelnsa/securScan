@@ -167,6 +167,39 @@ app.get('/api/scan/status/:jobId', (req, res) => {
   });
 });
 
+// Optional worker trigger endpoint: run a single sweep of pending jobs.
+// WARNING: In production, protect this endpoint (token/auth) or restrict to internal calls only.
+app.post('/api/worker/run', async (req, res) => {
+  try {
+    // Lazy-load the worker loop function to avoid circular requires
+    const { db } = await import('./db.js');
+    const { scanTarget } = await import('../scanner/index.js');
+    const { analyzeRegression } = await import('./regression.js');
+    const storage = await import('./storage.js');
+
+    // Simple single-pass: find one pending job and process it
+    const row = db.prepare("SELECT * FROM jobs WHERE status = 'PENDING' ORDER BY created_at ASC LIMIT 1").get();
+    if (!row) return res.json({ processed: 0, message: 'Aucun job en attente' });
+
+    // process inline (careful with serverless execution timeouts)
+    try {
+      storage.updateJobStarted(row.id);
+      const siteId = row.site_id || (storage.getOrCreateSite(row.url) || {}).id;
+      const previous = storage.getLastScanForSite(siteId);
+      const report = await scanTarget(row.url, { timeout: 60000, sslTimeout: 15000 });
+      const regression = analyzeRegression(previous, report);
+      const { scanId } = storage.saveScan(siteId, report, regression);
+      storage.completeJobSuccess(row.id, scanId, report);
+      return res.json({ processed: 1, jobId: row.id, scanId });
+    } catch (err) {
+      storage.completeJobFailure(row.id, err?.message || String(err));
+      return res.status(500).json({ processed: 0, error: err?.message || String(err) });
+    }
+  } catch (err) {
+    return res.status(500).json({ error: err?.message || String(err) });
+  }
+});
+
 // 2. Récupérer le résumé global
 app.get('/api/summary', (req, res) => {
   try {
